@@ -285,4 +285,17 @@
     top: 55%;
     right: 4%;
   }
+
+  /* Shift NAITIK tagline left on mobile so it doesn't overlap the pinned photo */
+  .hero__tagline {
+    text-align: left;
+    padding-left: 4vw;
+    margin-right: 36vw; /* reserve space for the photo on the right */
+  }
+
+  /* Nudge the pinned photo to the top-right corner on mobile */
+  .hero__pinned-photo {
+    top: 40% !important;
+    right: 2% !important;
+  }
 }
