@@ -1,0 +1,6 @@
+# Allow all search engine web crawlers (Googlebot, Bingbot, etc.)
+User-agent: *
+Allow: /
+
+# Point search engine crawlers to the canonical sitemap
+Sitemap: https://naitiklearn.github.io/naitik-portfolio/sitemap.xml

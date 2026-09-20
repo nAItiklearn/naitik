@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://naitiklearn.github.io/naitik-portfolio/</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://naitiklearn.github.io/naitik-portfolio/new-abtmeimage.png</image:loc>
+      <image:title>Naitik Sahu - Developer and AI Builder</image:title>
+      <image:caption>Official portrait of Naitik Sahu</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://naitiklearn.github.io/naitik-portfolio/components/hero-sec/main-image.jpeg</image:loc>
+      <image:title>Naitik Sahu</image:title>
+      <image:caption>Hero portrait of Naitik Sahu</image:caption>
+    </image:image>
+  </url>
+</urlset>

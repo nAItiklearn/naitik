@@ -1,8 +1,8 @@
-# Naitik's Portfolio
+# Naitik Sahu's Portfolio
 
 > A premium, cinematic personal portfolio — built from scratch using vanilla HTML, CSS, and JavaScript.
 
-**Live at:** _[your-url-here]_
+**Live at:** [https://naitiklearn.github.io/naitik-portfolio/](https://naitiklearn.github.io/naitik-portfolio/)
 
 ---
 
@@ -75,9 +75,22 @@ naitik-port/
 
 ## 🧑‍💻 About Me
 
-17-year-old builder from India. I learn by doing — jumping between AI, web dev, UI design, and game development. Currently building **SeekPDF** and open-source tools through Hack Club's Stardance program.
+**Naitik Sahu** is a 17-year-old builder and student developer from Lucknow, India. I learn by doing — jumping between AI, web dev, UI design, and game development. Currently building **SeekPDF** and open-source tools through Hack Club.
 
-**Contact:** naiitik1526@gmail.com | [GitHub](https://github.com/nAItiklearn)
+- **Website:** [https://naitiklearn.github.io/naitik-portfolio/](https://naitiklearn.github.io/naitik-portfolio/)
+- **Email:** [naiitik1526@gmail.com](mailto:naiitik1526@gmail.com)
+- **GitHub:** [https://github.com/nAItiklearn](https://github.com/nAItiklearn)
+- **LinkedIn:** [https://linkedin.com/in/nAItiklearn](https://linkedin.com/in/nAItiklearn)
+- **Instagram:** [https://instagram.com/naitiknyc](https://instagram.com/naitiknyc)
+
+---
+
+## 🔍 SEO & Google Indexing Setup
+
+This repository is optimized for Google Search and Knowledge Graph entity reconciliation:
+- `index.html` includes Schema.org `Person` & `WebSite` JSON-LD structured data with `sameAs` entity links.
+- `robots.txt` and `sitemap.xml` are configured for immediate discovery.
+- See [GOOGLE_SEARCH_INDEXING_GUIDE.md](GOOGLE_SEARCH_INDEXING_GUIDE.md) for step-by-step instructions on submitting to Google Search Console and dominating search results for "Naitik Sahu".
 
 ---
 
