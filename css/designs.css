@@ -1,26 +1,43 @@
 /* ====================================================
-   DESIGNS SECTION — Codegrid Mosaic Flip 3D Hover Effect
-   12x9 tile grid of 3D cubes flipping to reveal posters
+   DESIGNS SECTION — Hank-D-Tank 3D Cylinder Gallery
+   GSAP + Canvas 2D cylindrical slicing projection
+   Preserves 100% of poster dimensions without clipping
    ==================================================== */
 
 #designs {
   position: relative;
-  background: #111111;
+  background: #0a0a0d;
   color: #ffffff;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: clamp(3.5rem, 7vh, 6rem) 1.5rem;
+  padding: clamp(3rem, 6vh, 5.5rem) 1.5rem;
   overflow: hidden;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Subtle background radial glow */
+#designs::before {
+  content: '';
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70vw;
+  height: 500px;
+  background: radial-gradient(ellipse, rgba(244, 12, 63, 0.08) 0%, rgba(0, 0, 0, 0) 70%);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .designs__header {
   text-align: center;
-  z-index: 20;
-  margin-bottom: clamp(1.5rem, 4vh, 3rem);
+  z-index: 10;
+  margin-bottom: clamp(1rem, 2.5vh, 2rem);
+  max-width: 800px;
 }
 
 .designs__label {
@@ -39,6 +56,7 @@
   letter-spacing: -0.03em;
   color: #ffffff;
   line-height: 1.1;
+  margin: 0;
 }
 
 .designs__header span {
@@ -48,173 +66,246 @@
 .designs__sub {
   font-family: var(--font-body);
   font-size: var(--text-sm);
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.65);
   margin-top: var(--sp-2);
 }
 
-/* Spotlight container */
-.mosaic-spotlight {
+/* ─── Cylinder Stage Container ─── */
+.cylinder-wrapper {
   position: relative;
   width: 100%;
-  max-width: 1300px;
-  min-height: 600px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  perspective: 1000px;
-  transform-style: preserve-3d;
-}
-
-/* 3D Mosaic Grid Preview */
-.mosaic-stage {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transform-style: preserve-3d;
-}
-
-.project-preview {
-  --tile-size: 60px;
-  display: grid;
-  grid-template-columns: repeat(12, var(--tile-size));
-  grid-template-rows: repeat(9, var(--tile-size));
-  transform-style: preserve-3d;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
-  border-radius: 4px;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: high-quality;
-}
-
-.tile {
-  width: var(--tile-size);
-  height: var(--tile-size);
-  position: relative;
-  transform-style: preserve-3d;
-  will-change: transform;
-}
-
-.tile-face {
-  position: absolute;
-  width: calc(var(--tile-size) + 0.6px);
-  height: calc(var(--tile-size) + 0.6px);
-  background-repeat: no-repeat;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: high-quality;
-}
-
-.face-front {
-  transform: translateZ(calc(var(--tile-size) / 2));
-}
-
-.face-rear {
-  transform: rotateY(180deg) translateZ(calc(var(--tile-size) / 2));
-}
-
-.face-right {
-  transform: rotateY(90deg) translateZ(calc(var(--tile-size) / 2));
-}
-
-.face-left {
-  transform: rotateY(-90deg) translateZ(calc(var(--tile-size) / 2));
-}
-
-.face-top {
-  transform: rotateX(90deg) translateZ(calc(var(--tile-size) / 2));
-}
-
-.face-bottom {
-  transform: rotateX(-90deg) translateZ(calc(var(--tile-size) / 2));
-}
-
-/* Navigation List */
-.project-list {
-  position: absolute;
-  bottom: 2.5rem;
-  right: clamp(1.5rem, 4vw, 4rem);
+  max-width: 1400px;
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
-  z-index: 25;
-  background: rgba(17, 17, 17, 0.88);
+  align-items: center;
+  z-index: 5;
+}
+
+.cylinder-stage {
+  position: relative;
+  width: 100%;
+  height: clamp(500px, 64vh, 680px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  touch-action: pan-y;
+}
+
+#cylinder-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+#cylinder-canvas:active {
+  cursor: grabbing;
+}
+
+/* Arrow Navigation Buttons */
+.cylinder-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(20, 20, 26, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 15;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.cylinder-arrow:hover {
+  background: var(--clr-red);
+  border-color: var(--clr-red);
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 0 20px rgba(244, 12, 63, 0.45);
+}
+
+.cylinder-arrow--prev {
+  left: clamp(10px, 2.5vw, 28px);
+}
+
+.cylinder-arrow--next {
+  right: clamp(10px, 2.5vw, 28px);
+}
+
+/* Navigation List / Bottom Dock */
+.project-list {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.2rem;
+  z-index: 15;
+  background: rgba(16, 16, 20, 0.75);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  padding: 1.1rem 1.6rem;
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  user-select: none;
+  padding: 0.7rem 1.2rem;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: 95%;
 }
 
 .project-list a {
-  color: #ffffff;
-  text-transform: uppercase;
-  font-family: var(--font-mono);
-  font-size: clamp(0.85rem, 1.2vw, 0.95rem);
-  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: var(--font-body);
+  font-size: clamp(0.75rem, 1vw, 0.84rem);
+  font-weight: 500;
   text-decoration: none;
   cursor: pointer;
-  opacity: 0.45;
-  transition: all 0.3s var(--ease-expo);
-  text-align: right;
-  display: flex;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-full);
+  transition: all 0.2s ease;
+  display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 0.6rem;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+
+.project-list a:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.project-list a.active {
+  color: #ffffff;
+  background: rgba(244, 12, 63, 0.2);
+  border: 1px solid rgba(244, 12, 63, 0.45);
+  font-weight: 600;
+  box-shadow: 0 0 16px rgba(244, 12, 63, 0.25);
 }
 
 .project-list__num {
-  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
   color: var(--clr-red);
-  font-weight: 700;
-}
-
-.project-list a:hover,
-.project-list a.active {
-  opacity: 1;
-  color: #ffffff;
-  transform: translateX(-4px);
+  letter-spacing: 0.05em;
+  opacity: 0.9;
 }
 
 .project-list a.active .project-list__num {
-  text-shadow: 0 0 10px rgba(244, 12, 63, 0.8);
+  color: #ff4d6d;
 }
 
-/* Responsive Scaling */
-@media (max-width: 1024px) {
-  .project-preview {
-    --tile-size: 48px;
-  }
+/* ─── Poster Lightbox ─── */
+.poster-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.poster-lightbox.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.poster-lightbox__dialog {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: scale(0.92);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.poster-lightbox.is-open .poster-lightbox__dialog {
+  transform: scale(1);
+}
+
+.poster-lightbox__img {
+  max-width: 85vw;
+  max-height: 78vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.poster-lightbox__caption {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.poster-lightbox__title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.poster-lightbox__cat {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--clr-red);
+  margin-top: 0.25rem;
+}
+
+.poster-lightbox__close {
+  position: absolute;
+  top: -45px;
+  right: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.poster-lightbox__close:hover {
+  background: var(--clr-red);
+  border-color: var(--clr-red);
 }
 
 @media (max-width: 768px) {
-  .mosaic-spotlight {
-    flex-direction: column;
-    gap: 2rem;
-    min-height: auto;
+  .cylinder-stage {
+    height: 480px;
   }
-
-  .project-preview {
-    --tile-size: 30px;
+  .cylinder-arrow {
+    width: 38px;
+    height: 38px;
+    font-size: 1rem;
   }
-
   .project-list {
-    position: relative;
-    bottom: auto;
-    right: auto;
-    width: 100%;
-    max-width: 400px;
-    align-items: center;
+    border-radius: var(--radius-md);
+    padding: 0.5rem 0.8rem;
+    gap: 0.3rem;
   }
-
   .project-list a {
-    text-align: center;
-    justify-content: center;
-  }
-}
-
-@media (max-width: 420px) {
-  .project-preview {
-    --tile-size: 24px;
+    font-size: 0.72rem;
+    padding: 0.3rem 0.6rem;
   }
 }

@@ -206,122 +206,85 @@
         return;
       }
 
-      // Check author identity: requires valid email or name or both
+      // Check author identity: requires only a name (NO email required!)
       const authorVal = canvasAuthorInput?.value.trim() || '';
       const formName = contactNameInput?.value.trim() || '';
       const formEmail = contactEmailInput?.value.trim() || '';
+      const formMsg = contactMessageInput?.value.trim() || '';
 
-      let senderName = '';
-      let senderEmail = '';
+      let senderName = authorVal || formName;
 
-      if (authorVal) {
-        if (authorVal.includes('@')) {
-          if (!isValidEmail(authorVal)) {
-            showError(canvasAuthorInput, canvasAuthorError, 'Please enter a valid, real email address (e.g. name@domain.com)');
-            return;
-          }
-          senderEmail = authorVal;
-          senderName = isValidName(formName) ? formName : authorVal.split('@')[0];
-        } else {
-          if (!isValidName(authorVal)) {
-            showError(canvasAuthorInput, canvasAuthorError, 'Please enter your name (at least 2 letters) or a valid email');
-            return;
-          }
-          senderName = authorVal;
-          if (formEmail) {
-            if (!isValidEmail(formEmail)) {
-              showError(canvasAuthorInput, canvasAuthorError, 'The email in the contact form is invalid. Please fix or clear it.');
-              return;
-            }
-            senderEmail = formEmail;
-          }
-        }
-      } else {
-        // Author bar is empty, check if form name or email is filled on the left
-        const hasFormName = isValidName(formName);
-        const hasFormEmail = formEmail.length > 0;
-
-        if (hasFormEmail && !isValidEmail(formEmail)) {
-          showError(canvasAuthorInput, canvasAuthorError, 'Please enter a valid, real email address so Naitik knows who drew this!');
-          showError(contactEmailInput, emailError, 'Please enter a valid, real email');
-          return;
-        }
-
-        if (hasFormName && hasFormEmail && isValidEmail(formEmail)) {
-          senderName = formName;
-          senderEmail = formEmail;
-        } else if (hasFormName) {
-          senderName = formName;
-        } else if (hasFormEmail && isValidEmail(formEmail)) {
-          senderEmail = formEmail;
-          senderName = formEmail.split('@')[0];
-        } else {
-          showError(
-            canvasAuthorInput,
-            canvasAuthorError,
-            'Please write your name or a valid email so Naitik knows who drew this! 🎨'
-          );
-          return;
-        }
+      if (!senderName || senderName.length < 2) {
+        showError(
+          canvasAuthorInput,
+          canvasAuthorError,
+          'Please enter your name (at least 2 letters) so we can put it in the scrapbook! 🎨'
+        );
+        return;
       }
 
       clearError(canvasAuthorInput, canvasAuthorError);
 
       const originalText = canvasSendBtn.textContent;
-      canvasSendBtn.textContent = 'Sending doodle... 🎨';
+      canvasSendBtn.textContent = 'Posting doodle... 🎨';
       canvasSendBtn.disabled = true;
 
       try {
-        // Convert canvas drawing to high-res Blob
+        const cleanName = (senderName || 'Artist').replace(/[^a-zA-Z0-9_-]/g, '_');
+        const dataUrl = canvas.toDataURL('image/png');
+
+        // Immediately display in Scrapbook!
+        if (window.addScrapbookDoodle) {
+          window.addScrapbookDoodle({
+            name: senderName,
+            message: formMsg,
+            image: dataUrl,
+            isDark: true
+          });
+        }
+
+        // Convert canvas drawing to high-res Blob for background email backup
         const blob = await new Promise((resolve) =>
           canvas.toBlob(resolve, 'image/png')
         );
 
-        if (!blob) throw new Error('Could not convert canvas to image');
-
-        const cleanName = (senderName || 'Artist').replace(/[^a-zA-Z0-9_-]/g, '_');
-        const fileName = `${cleanName}_doodle.png`;
-
-        // Attach image to file input so FormSubmit multipart upload attaches it to Gmail
-        if (doodleFileInput) {
+        if (blob && doodleFileInput) {
+          const fileName = `${cleanName}_doodle.png`;
           const file = new File([blob], fileName, { type: 'image/png' });
           const dt = new DataTransfer();
           dt.items.add(file);
           doodleFileInput.files = dt.files;
+
+          if (contactNameInput) contactNameInput.value = senderName;
+          if (contactEmailInput) {
+            contactEmailInput.value = formEmail || `${cleanName.toLowerCase()}@scrapbook.local`;
+          }
+          if (contactMessageInput) {
+            contactMessageInput.value = formMsg || `🎨 ${senderName} drew a doodle for you in the drawing canvas! Added to Scrapbook.`;
+          }
+
+          const subjectInput = form?.querySelector('input[name="_subject"]');
+          if (subjectInput) {
+            subjectInput.value = `🎨 New Scrapbook Doodle from ${senderName}!`;
+          }
+
+          // Submit form seamlessly via hidden iframe
+          if (form) {
+            form.submit();
+          }
         }
 
-        // Set form fields for submission
-        if (contactNameInput) contactNameInput.value = senderName;
-        if (contactEmailInput) {
-          contactEmailInput.value = senderEmail || `${cleanName.toLowerCase()}@portfolio-visitor.dev`;
-        }
-        if (contactMessageInput) {
-          contactMessageInput.value = `🎨 ${senderName} drew a doodle for you in the drawing canvas on your portfolio! Attached as a full-resolution PNG image file.`;
-        }
-
-        const subjectInput = form?.querySelector('input[name="_subject"]');
-        if (subjectInput) {
-          subjectInput.value = `🎨 New Doodle from ${senderName}${senderEmail ? ' (' + senderEmail + ')' : ''}!`;
-        }
-
-        // Submit form seamlessly via hidden iframe
-        if (form) {
-          form.submit();
-        }
-
-        canvasSendBtn.textContent = 'Doodle Sent! ✓';
+        canvasSendBtn.textContent = 'Added to Scrapbook! ✓';
         canvasSendBtn.style.background = '#1a7a1a';
         canvasSendBtn.style.borderColor = '#1a7a1a';
 
-        // Download a souvenir copy for the user
+        // Download souvenir copy for user
         try {
           const downloadLink = document.createElement('a');
           downloadLink.download = `${cleanName}-doodle-for-naitik.png`;
-          downloadLink.href = canvas.toDataURL('image/png');
+          downloadLink.href = dataUrl;
           downloadLink.click();
         } catch (e) {}
-
-        alert(`Yay! Your doodle was sent straight to Naitik's Gmail as an attachment! 🎨✉️`);
 
         setTimeout(() => {
           canvasSendBtn.textContent = originalText;
@@ -330,10 +293,10 @@
           canvasSendBtn.disabled = false;
         }, 4500);
       } catch (err) {
-        console.error('Error sending doodle:', err);
+        console.error('Error posting doodle:', err);
         canvasSendBtn.textContent = originalText;
         canvasSendBtn.disabled = false;
-        showError(canvasAuthorInput, canvasAuthorError, 'Could not send doodle. Please try again!');
+        showError(canvasAuthorInput, canvasAuthorError, 'Could not post doodle. Please try again!');
       }
     });
   }
